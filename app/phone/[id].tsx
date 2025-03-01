@@ -19,7 +19,7 @@ import Phone from '@/components/phones/Phone';
 import { Colors } from '@/constants/Colors';
 
 export default function PhoneDetailsScreen() {
-  const { id, from } = useLocalSearchParams<{ id: string; from: string }>();
+  const { id } = useLocalSearchParams<{ id: string; }>();
   const [phone, setPhone] = useState<Phone | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const router = useRouter();

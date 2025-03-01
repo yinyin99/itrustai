@@ -73,6 +73,12 @@ export default function PhonesScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }]}>
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+          Ads
+        </Text>
+      </View>
+
       <View style={styles.searchContainer}>
         <TextInput
           style={[styles.searchInput, {
@@ -126,6 +132,14 @@ export default function PhonesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  header: {
+    padding: 15,
+    paddingBottom: 5,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   searchContainer: {
     padding: 10,

@@ -41,12 +41,7 @@ const PhoneFilters: React.FC<PhoneFiltersProps> = ({
   const uniqueConstructors = Array.from(new Set(phones.map(p => p.constructor))).sort();
   const uniqueCountries = Array.from(new Set(phones.map(p => p.salerCountry))).sort();
   
-  // Calculate min and max values for price range
-  const prices = phones.map(p => p.price);
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
-
-  const handleInputChange = (field: keyof PhoneFilterOptions, value: any) => {
+  const handleInputChange = (field: keyof PhoneFilterOptions, value: string | number | undefined) => {
     setTempFilters({
       ...tempFilters,
       [field]: value,
@@ -189,7 +184,7 @@ const PhoneFilters: React.FC<PhoneFiltersProps> = ({
                         },
                       ]}
                       value={tempFilters.priceMin?.toString() || ''}
-                      onChangeText={(text) => handleInputChange('priceMin', text ? parseInt(text) : undefined)}
+                      onChangeText={(text) => handleInputChange('priceMin', text ? parseInt(text) : 0)}
                       placeholder="Min"
                       placeholderTextColor={colorScheme === 'dark' ? '#999' : '#666'}
                       keyboardType="number-pad"

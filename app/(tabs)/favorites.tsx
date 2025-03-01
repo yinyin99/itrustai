@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   ScrollView,
   useColorScheme,
-  TouchableOpacity,
   TextInput,
   Platform,
 } from 'react-native';
@@ -17,13 +16,9 @@ import PhoneService from '@/services/PhoneService';
 import PhoneList from '@/components/phones/PhoneList';
 import Phone from '@/components/phones/Phone';
 import Loader from '@/components/Loader';
-import { Colors } from '@/constants/Colors';
 import PhoneFilters, { PhoneFilterOptions } from '@/components/phones/PhoneFilters';
 
-type TabType = 'phones';
-
 export default function FavoritesScreen() {
-  const [activeTab, setActiveTab] = useState<TabType>('phones');
   const [favoritePhones, setFavoritePhones] = useState<Phone[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -106,6 +101,14 @@ export default function FavoritesScreen() {
           phones={favoritePhones}
         />
       </View>
+
+      {filteredFavorites.length > 0 && (
+        <View style={styles.countContainer}>
+          <Text style={[styles.countText, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+            {filteredFavorites.length} {filteredFavorites.length === 1 ? 'phone ad' : 'phone ads'} found
+          </Text>
+        </View>
+      )}
       
       {filteredFavorites.length > 0 && (searchQuery || Object.keys(filterOptions).length > 0) && (
         <View style={styles.countContainer}>
