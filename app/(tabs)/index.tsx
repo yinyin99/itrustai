@@ -1,74 +1,168 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  useColorScheme,
+  SafeAreaView,
+  Platform,
+} from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import PhoneList from '@/components/phones/PhoneList';
+import Phone from '@/components/phones/Phone';
+import Loader from '@/components/Loader';
+import PhoneService from '@/services/PhoneService';
+import PhoneFilters, { PhoneFilterOptions } from '@/components/phones/PhoneFilters';
 
-export default function HomeScreen() {
+export default function PhonesScreen() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [phones, setPhones] = useState<Phone[]>([]);
+  const [filterOptions, setFilterOptions] = useState<PhoneFilterOptions>({});
+  const colorScheme = useColorScheme();
+  const router = useRouter();
+
+  // Load phones on initial render
+  useEffect(() => {
+    const allPhones = PhoneService.getAllPhones();
+    setPhones(allPhones);
+    setLoading(false);
+  }, []);
+
+  // Filter phones based on search query and filters
+  const filteredPhones = PhoneService.filterPhones(searchQuery, phones, filterOptions);
+
+  // Load favorites when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      loadFavorites();
+    }, [])
+  );
+
+  const loadFavorites = async () => {
+    const favs = await PhoneService.getFavorites();
+    setFavorites(favs);
+  };
+
+  const toggleFavorite = async (phoneId: string) => {
+    const newFavorites = await PhoneService.toggleFavorite(phoneId, favorites);
+    setFavorites(newFavorites);
+  };
+
+  const handlePhonePress = (phone: Phone) => {
+    router.push({
+      pathname: "/phone/[id]",
+      params: { id: phone.id, from: 'phones' }
+    } as any);
+  };
+
+  const applyFilters = (filters: PhoneFilterOptions) => {
+    setFilterOptions(filters);
+  };
+
+  const clearFilters = () => {
+    setFilterOptions({});
+  };
+
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }]}>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={[styles.searchInput, {
+            backgroundColor: colorScheme === 'dark' ? '#333' : '#f0f0f0',
+            color: colorScheme === 'dark' ? '#fff' : '#000'
+          }]}
+          placeholder="Search phones..."
+          placeholderTextColor={colorScheme === 'dark' ? '#999' : '#666'}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <PhoneFilters 
+          onApplyFilters={applyFilters}
+          activeFilters={filterOptions}
+          clearFilters={clearFilters}
+          phones={phones}
+        />
+      </View>
+      
+      {filteredPhones.length > 0 && (
+        <View style={styles.countContainer}>
+          <Text style={[styles.countText, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+            {filteredPhones.length} {filteredPhones.length === 1 ? 'phone ad' : 'phone ads'} found
+          </Text>
+        </View>
+      )}
+      
+      {filteredPhones.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={[styles.emptyText, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+            No matches found
+          </Text>
+          {searchQuery || Object.keys(filterOptions).length > 0 ? (
+            <Text style={[styles.searchQuery, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
+              Try adjusting your search or filters
+            </Text>
+          ) : null}
+        </View>
+      ) : (
+        <PhoneList 
+          phones={filteredPhones}
+          onPhonePress={handlePhonePress}
+          favorites={favorites}
+          onToggleFavorite={toggleFavorite}
+        />
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
   },
-  stepContainer: {
-    gap: 8,
+  searchContainer: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    paddingTop: Platform.OS === 'ios' ? 10 : 10,
+    flexDirection: 'column',
+  },
+  searchInput: {
+    height: 40,
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  countContainer: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  countText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '500',
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  searchQuery: {
+    fontSize: 16,
+    fontStyle: 'italic',
   },
 });
