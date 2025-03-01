@@ -57,7 +57,7 @@ export default function FavoritesScreen() {
     router.push({
       pathname: "/phone/[id]",
       params: { id: phone.id, from: 'favorites' }
-    } as any);
+    } as Parameters<typeof router.push>[0]);
   };
 
   const applyFilters = (filters: PhoneFilterOptions) => {

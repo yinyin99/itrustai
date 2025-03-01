@@ -56,7 +56,7 @@ export default function PhonesScreen() {
     router.push({
       pathname: "/phone/[id]",
       params: { id: phone.id, from: 'phones' }
-    } as any);
+    } as Parameters<typeof router.push>[0]);
   };
 
   const applyFilters = (filters: PhoneFilterOptions) => {

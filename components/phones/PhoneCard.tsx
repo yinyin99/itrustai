@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Phone from './Phone';
+import { getCountryFlag } from '@/utils/countryUtils';
 
 interface PhoneCardProps {
   phone: Phone;
@@ -18,6 +19,7 @@ const PhoneCard: React.FC<PhoneCardProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const colorScheme = useColorScheme();
+  const countryFlag = getCountryFlag(phone.salerCountry);
 
   return (
     <TouchableOpacity
@@ -69,7 +71,7 @@ const PhoneCard: React.FC<PhoneCardProps> = ({
         </Text>
         <View style={styles.salerInfo}>
           <Text style={[styles.saler, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
-            Seller: {phone.saler} ({phone.salerCity}, {phone.salerCountry})
+            Seller: {phone.saler} ({phone.salerCity}, {countryFlag} {phone.salerCountry})
           </Text>
           <Text style={[styles.contact, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
             Contact: {phone.phone}
