@@ -17,6 +17,7 @@ import PhoneList from '@/components/phones/PhoneList';
 import Phone from '@/components/phones/Phone';
 import Loader from '@/components/Loader';
 import PhoneFilters, { PhoneFilterOptions } from '@/components/phones/PhoneFilters';
+import Header from '@/components/Header';
 
 export default function FavoritesScreen() {
   const [favoritePhones, setFavoritePhones] = useState<Phone[]>([]);
@@ -77,6 +78,7 @@ export default function FavoritesScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }]}>
+      <Header />
       <View style={styles.header}>
         <Text style={[styles.title, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
           Favorites
@@ -101,16 +103,8 @@ export default function FavoritesScreen() {
           phones={favoritePhones}
         />
       </View>
-
-      {filteredFavorites.length > 0 && (
-        <View style={styles.countContainer}>
-          <Text style={[styles.countText, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-            {filteredFavorites.length} {filteredFavorites.length === 1 ? 'phone ad' : 'phone ads'} found
-          </Text>
-        </View>
-      )}
       
-      {filteredFavorites.length > 0 && (searchQuery || Object.keys(filterOptions).length > 0) && (
+      {filteredFavorites.length > 0 && (
         <View style={styles.countContainer}>
           <Text style={[styles.countText, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
             {filteredFavorites.length} {filteredFavorites.length === 1 ? 'favorite' : 'favorites'} found

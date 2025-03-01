@@ -8,13 +8,14 @@ import {
   SafeAreaView,
   Platform,
 } from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
 
 import PhoneList from '@/components/phones/PhoneList';
 import Phone from '@/components/phones/Phone';
 import Loader from '@/components/Loader';
 import PhoneService from '@/services/PhoneService';
 import PhoneFilters, { PhoneFilterOptions } from '@/components/phones/PhoneFilters';
+import Header from '@/components/Header';
 
 export default function PhonesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,6 +25,7 @@ export default function PhonesScreen() {
   const [filterOptions, setFilterOptions] = useState<PhoneFilterOptions>({});
   const colorScheme = useColorScheme();
   const router = useRouter();
+  const { applySeller } = useLocalSearchParams<{ applySeller?: string }>();
 
   // Load phones on initial render
   useEffect(() => {
@@ -31,6 +33,16 @@ export default function PhonesScreen() {
     setPhones(allPhones);
     setLoading(false);
   }, []);
+
+  // Apply seller filter if it comes from URL params
+  useEffect(() => {
+    if (applySeller) {
+      setFilterOptions(prev => ({
+        ...prev,
+        seller: applySeller
+      }));
+    }
+  }, [applySeller]);
 
   // Filter phones based on search query and filters
   const filteredPhones = PhoneService.filterPhones(searchQuery, phones, filterOptions);
@@ -73,6 +85,7 @@ export default function PhonesScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }]}>
+      <Header />
       <View style={styles.header}>
         <Text style={[styles.title, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
           Ads
@@ -101,7 +114,7 @@ export default function PhonesScreen() {
       {filteredPhones.length > 0 && (
         <View style={styles.countContainer}>
           <Text style={[styles.countText, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-            {filteredPhones.length} {filteredPhones.length === 1 ? 'phone ad' : 'phone ads'} found
+            {filteredPhones.length} out of {phones.length} {phones.length === 1 ? 'ad' : 'ads'} shown
           </Text>
         </View>
       )}

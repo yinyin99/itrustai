@@ -18,6 +18,7 @@ export interface PhoneFilterOptions {
   priceMin?: number;
   priceMax?: number;
   country?: string;
+  seller?: string;
 }
 
 interface PhoneFiltersProps {
@@ -40,6 +41,7 @@ const PhoneFilters: React.FC<PhoneFiltersProps> = ({
   // Extract unique values for dropdown options
   const uniqueConstructors = Array.from(new Set(phones.map(p => p.constructor))).sort();
   const uniqueCountries = Array.from(new Set(phones.map(p => p.salerCountry))).sort();
+  const uniqueSellers = Array.from(new Set(phones.map(p => p.saler))).sort();
   
   const handleInputChange = (field: keyof PhoneFilterOptions, value: string | number | undefined) => {
     setTempFilters({
@@ -251,6 +253,55 @@ const PhoneFilters: React.FC<PhoneFiltersProps> = ({
                         ]}
                       >
                         {country}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* Seller Filter */}
+              <View style={styles.filterSection}>
+                <Text style={[styles.filterLabel, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+                  Seller
+                </Text>
+                <TextInput
+                  style={[
+                    styles.filterInput,
+                    {
+                      backgroundColor: colorScheme === 'dark' ? '#333' : '#f0f0f0',
+                      color: colorScheme === 'dark' ? '#fff' : '#000',
+                    },
+                  ]}
+                  value={tempFilters.seller || ''}
+                  onChangeText={(text) => handleInputChange('seller', text)}
+                  placeholder="Filter by seller..."
+                  placeholderTextColor={colorScheme === 'dark' ? '#999' : '#666'}
+                />
+                <ScrollView horizontal style={styles.tagsContainer}>
+                  {uniqueSellers.map((seller) => (
+                    <TouchableOpacity
+                      key={seller}
+                      style={[
+                        styles.tagButton,
+                        {
+                          backgroundColor: tempFilters.seller === seller 
+                            ? (colorScheme === 'dark' ? '#4285F4' : '#CFE8FF') 
+                            : (colorScheme === 'dark' ? '#333' : '#f0f0f0'),
+                        },
+                      ]}
+                      onPress={() => handleInputChange('seller', seller)}
+                    >
+                      <Text
+                        style={[
+                          styles.tagText,
+                          {
+                            color: tempFilters.seller === seller
+                              ? (colorScheme === 'dark' ? '#fff' : '#0066CC')
+                              : (colorScheme === 'dark' ? '#fff' : '#000'),
+                          },
+                        ]}
+                      >
+                        {seller}
                       </Text>
                     </TouchableOpacity>
                   ))}

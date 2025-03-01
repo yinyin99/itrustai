@@ -58,6 +58,14 @@ export class PhoneService {
                     phone.salerCountry.toLowerCase().includes(countryQuery)
                 );
             }
+
+            // Filter by seller
+            if (filters.seller) {
+                const sellerQuery = filters.seller.toLowerCase();
+                filtered = filtered.filter(phone => 
+                    phone.saler.toLowerCase().includes(sellerQuery)
+                );
+            }
         }
         
         return filtered;
@@ -85,6 +93,13 @@ export class PhoneService {
           console.error('Error updating favorites:', error);
           return currentFavorites;
         }
+    }
+
+    static getPhonesBySeller(sellerName: string): Phone[] {
+        const allPhones = this.getAllPhones();
+        return allPhones.filter(phone => 
+            phone.saler.toLowerCase().includes(sellerName.toLowerCase())
+        );
     }
 }
 

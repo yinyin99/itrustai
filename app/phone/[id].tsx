@@ -17,6 +17,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import PhoneService from '@/services/PhoneService';
 import Phone from '@/components/phones/Phone';
 import { Colors } from '@/constants/Colors';
+import Header from '@/components/Header';
 
 export default function PhoneDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string; }>();
@@ -58,6 +59,15 @@ export default function PhoneDetailsScreen() {
     }
   };
 
+  const navigateToSellerPage = () => {
+    if (phone) {
+      router.push({
+        pathname: "/seller/[name]",
+        params: { name: phone.saler }
+      });
+    }
+  };
+
   if (!phone) {
     return (
       <View style={styles.loadingContainer}>
@@ -69,6 +79,7 @@ export default function PhoneDetailsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }]}>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      <Header />
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
           <TouchableOpacity
@@ -143,9 +154,15 @@ export default function PhoneDetailsScreen() {
             </Text>
             <View style={styles.infoRow}>
               <Text style={[styles.label, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>Name:</Text>
-              <Text style={[styles.value, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-                {phone.saler}
-              </Text>
+              <TouchableOpacity onPress={navigateToSellerPage}>
+                <Text style={[
+                  styles.value, 
+                  styles.link, 
+                  { color: Colors[colorScheme ?? 'light'].tint }
+                ]}>
+                  {phone.saler}
+                </Text>
+              </TouchableOpacity>
             </View>
             <View style={styles.infoRow}>
               <Text style={[styles.label, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>Location:</Text>
@@ -259,5 +276,8 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     lineHeight: 24,
+  },
+  link: {
+    textDecorationLine: 'underline',
   },
 });
