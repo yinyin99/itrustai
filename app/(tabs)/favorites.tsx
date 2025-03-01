@@ -7,6 +7,8 @@ import {
   ScrollView,
   useColorScheme,
   TouchableOpacity,
+  TextInput,
+  Platform,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -16,6 +18,7 @@ import PhoneList from '@/components/phones/PhoneList';
 import Phone from '@/components/phones/Phone';
 import Loader from '@/components/Loader';
 import { Colors } from '@/constants/Colors';
+import PhoneFilters, { PhoneFilterOptions } from '@/components/phones/PhoneFilters';
 
 type TabType = 'phones';
 
@@ -23,6 +26,8 @@ export default function FavoritesScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('phones');
   const [favoritePhones, setFavoritePhones] = useState<Phone[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterOptions, setFilterOptions] = useState<PhoneFilterOptions>({});
   const colorScheme = useColorScheme();
   const router = useRouter();
 
@@ -60,6 +65,17 @@ export default function FavoritesScreen() {
     } as any);
   };
 
+  const applyFilters = (filters: PhoneFilterOptions) => {
+    setFilterOptions(filters);
+  };
+
+  const clearFilters = () => {
+    setFilterOptions({});
+  };
+
+  // Filter favorite phones based on search query and filter options
+  const filteredFavorites = PhoneService.filterPhones(searchQuery, favoritePhones, filterOptions);
+
   if (loading) {
     return <Loader />;
   }
@@ -72,14 +88,52 @@ export default function FavoritesScreen() {
         </Text>
       </View>
       
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={[styles.searchInput, {
+            backgroundColor: colorScheme === 'dark' ? '#333' : '#f0f0f0',
+            color: colorScheme === 'dark' ? '#fff' : '#000'
+          }]}
+          placeholder="Search favorites..."
+          placeholderTextColor={colorScheme === 'dark' ? '#999' : '#666'}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <PhoneFilters 
+          onApplyFilters={applyFilters}
+          activeFilters={filterOptions}
+          clearFilters={clearFilters}
+          phones={favoritePhones}
+        />
+      </View>
+      
+      {filteredFavorites.length > 0 && (searchQuery || Object.keys(filterOptions).length > 0) && (
+        <View style={styles.countContainer}>
+          <Text style={[styles.countText, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+            {filteredFavorites.length} {filteredFavorites.length === 1 ? 'favorite' : 'favorites'} found
+          </Text>
+        </View>
+      )}
+      
       <ScrollView style={styles.scrollContent}>
         {favoritePhones.length > 0 ? (
-          <PhoneList
-            phones={favoritePhones}
-            onPhonePress={handlePhonePress}
-            favorites={favoritePhones.map(p => p.id)}
-            onToggleFavorite={togglePhoneFavorite}
-          />
+          filteredFavorites.length > 0 ? (
+            <PhoneList
+              phones={filteredFavorites}
+              onPhonePress={handlePhonePress}
+              favorites={favoritePhones.map(p => p.id)}
+              onToggleFavorite={togglePhoneFavorite}
+            />
+          ) : (searchQuery || Object.keys(filterOptions).length > 0) ? (
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.emptyText, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+                No matches found
+              </Text>
+              <Text style={[styles.emptySubtext, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
+                Try adjusting your search or filters
+              </Text>
+            </View>
+          ) : null
         ) : (
           <View style={styles.emptyContainer}>
             <FontAwesome name="heart-o" size={60} color={colorScheme === 'dark' ? '#666' : '#ccc'} />
@@ -107,6 +161,30 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  searchContainer: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    paddingTop: Platform.OS === 'ios' ? 10 : 10,
+    flexDirection: 'column',
+  },
+  searchInput: {
+    height: 40,
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  countContainer: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  countText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   scrollContent: {
     flex: 1,
